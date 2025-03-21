@@ -1,0 +1,48 @@
+Kimia Farma Big Data Analytics Project Based Internship Program
+
+Performance Analytics Analisis kinerja bisnis Kimia Farma
+Tahun 2020-2023
+
+
+-- Membuat atau menggantikan tabel bernama 'tabel_analisis' di dataset 'kimia_farma'
+CREATE OR REPLACE TABLE `kimia_farma.tabel_analisis` AS
+SELECT
+    ft.transaction_id,                  -- Mengambil kolom ID transaksi dari tabel transaksi
+    ft.date,                            -- Mengambil tanggal transaksi
+    kc.branch_id,                       -- Mengambil ID cabang dari tabel kantor cabang
+    kc.branch_name,                     -- Mengambil nama cabang
+    kc.kota,                            -- Mengambil nama kota cabang
+    kc.provinsi,                        -- Mengambil nama provinsi cabang
+    kc.rating AS rating_cabang,         -- Rating cabang, di-alias sebagai rating_cabang
+    ft.customer_name,                   -- Mengambil nama customer dari tabel transaksi
+    ft.product_id,                      -- Mengambil ID produk yang dibeli
+    p.product_name,                     -- Mengambil nama produk dari tabel produk
+    p.price as actual_price,            -- Harga produk sebelum diskon
+    ft.discount_percentage,             -- Persentase diskon dari tabel transaksi
+    -- Menentukan persentase gross laba berdasarkan rentang harga produk
+    CASE
+        WHEN p.price <= 50000 THEN 0.10                         -- Jika harga <= 50000, maka laba 10%
+        WHEN p.price > 50000 AND p.price <= 100000 THEN 0.15    -- Jika harga > 50000 dan <= 100000, maka laba 15%
+        WHEN p.price > 100000 AND p.price <= 300000 THEN 0.20   -- Jika harga > 100000 dan <= 300000, maka laba 20%
+        WHEN p.price > 300000 AND p.price <= 500000 THEN 0.25   -- Jika harga > 300000 dan <= 500000, maka laba 25%
+        ELSE 0.30                                               -- Jika harga > 500000, maka laba 30%
+    END AS persentase_gross_laba,
+    -- Menghitung nett_sales (harga setelah diskon)
+    p.price * (1 - ft.discount_percentage) AS nett_sales,
+    -- Menghitung nett_profit (laba bersih = nett_sales * persentase laba)
+    (p.price * (1 - ft.discount_percentage)) * CASE
+        WHEN p.price <= 50000 THEN 0.10
+        WHEN p.price > 50000 AND p.price <= 100000 THEN 0.15
+        WHEN p.price > 100000 AND p.price <= 300000 THEN 0.20
+        WHEN p.price > 300000 AND p.price <= 500000 THEN 0.25
+        ELSE 0.30
+    END AS nett_profit,                -- Memberi alias nett_profit untuk hasil perhitungan keuntungan
+    ft.rating AS rating_transaksi      -- Memberi alias pada kolom rating menjadi rating_transaksi
+FROM    --  Mengambil data dari tabel transaksi
+    `kimia_farma.kf_final_transaction` ft  
+JOIN    --  Join dengan tabel kantor cabang berdasarkan branch_id
+    `kimia_farma.kf_kantor_cabang` kc       
+    ON ft.branch_id = kc.branch_id          
+JOIN    --  Join dengan tabel produk berdasarkan product_id
+    `kimia_farma.kf_product` p             
+    ON ft.product_id = p.product_id;
