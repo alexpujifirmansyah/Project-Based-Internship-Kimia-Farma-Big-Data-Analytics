@@ -1,7 +1,6 @@
-Kimia Farma Big Data Analytics Project Based Internship Program
+--    Kimia Farma Big Data Analytics Project Based Internship Program
 
-Performance Analytics Analisis kinerja bisnis Kimia Farma
-Tahun 2020-2023
+--    Performance Analytics Analisis kinerja bisnis Kimia Farma Tahun 2020-2023
 
 
 -- Membuat atau menggantikan tabel bernama 'tabel_analisis' di dataset 'kimia_farma'
